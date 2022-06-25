@@ -101,14 +101,11 @@ class StatsdClient(object):
         >>> len(formatted)
         2
         """
-        data = {}
         value = "{0}|{1}".format(value, _type)
         # TODO: Allow any iterable except strings
         if not isinstance(keys, (list, tuple)):
             keys = [keys]
-        for key in keys:
-            data[key] = value
-        return data
+        return {key: value for key in keys}
 
     @staticmethod
     def sample(data, sample_rate):
@@ -134,12 +131,12 @@ class StatsdClient(object):
         """
         if sample_rate >= 1:
             return data
-        elif sample_rate < 1:
-            if random() <= sample_rate:
-                sampled_data = {}
-                for stat, value in data.items():
-                    sampled_data[stat] = "{0}|@{1}".format(value, sample_rate)
-                return sampled_data
+        if random() <= sample_rate:
+            return {
+                stat: "{0}|@{1}".format(value, sample_rate)
+                for stat, value in data.items()
+            }
+
         return {}
 
     @staticmethod
